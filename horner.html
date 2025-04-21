@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Schemat Hornera</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px; 
+      background-image: url('https://cdn.discordapp.com/attachments/1132056173697306705/1363919540815269959/34294124_009396265655.jpg?ex=6807c88e&is=6806770e&hm=ab9ec49dc21ad91b27be2bfde6384650409c3c7118abd83786b31baa4d0a38fe&');
+      color: white;
+    }
+    input { 
+      width: 60px; 
+      text-align: center; 
+      margin: 5px; 
+      padding: 5px;
+      border: 2px solid #4b4b4b;
+      background-color: #444;
+      color: white;
+      font-size: 14px;
+    }
+    table { 
+      border-collapse: collapse; 
+      margin-top: 20px; 
+      width: 100%;
+    }
+    td { 
+      width: 80px; 
+      height: 40px; 
+      text-align: center; 
+      border: 1px solid #4b4b4b; 
+      font-size: 14px;
+      color: white;
+    }
+    .green { background-color: #3b6e46; } /* Camouflage green */
+    .cyan { background-color: #1a3d36; } /* Dark cyan */
+    .gray { background-color: #616161; } /* Dark gray */
+    .blue { background-color: #3b5998; color: white; }
+    button {
+      background-color: #4b4b4b;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #6a6a6a;
+    }
+    h2 {
+      color: #d3d3d3;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Schemat Hornera</h2>
+
+<p>
+  Stopień wielomianu N = 
+  <input type="number" id="degN" value="4" min="1" onchange="generujPola()">
+</p>
+
+<p id="polaWielomianu"></p>
+
+<p>Dziel przez (x + <input id="dzielnik" value="-1">)</p>
+
+<button onclick="oblicz()">Obliczenia</button>
+
+<div id="schemat"></div>
+
+<script>
+function generujPola() {
+  const N = parseInt(document.getElementById("degN").value);
+  let html = '(';
+  for (let i = 0; i <= N; i++) {
+    const potega = N - i;
+    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`; // Fraction input
+    if (potega > 1) html += ` x<sup>${potega}</sup> + `;
+    else if (potega === 1) html += ` x + `;
+  }
+  html += ')';
+  document.getElementById("polaWielomianu").innerHTML = html;
+}
+
+// Wywołaj przy pierwszym załadowaniu
+generujPola();
+
+// Helper function to parse input
+function parseFraction(value) {
+  if (value.includes("/")) {
+    const parts = value.split("/").map(part => parseFloat(part.trim()));
+    if (parts.length === 2) {
+      return parts[0] / parts[1]; // Return as a decimal if it's a fraction
+    }
+  }
+  return parseFloat(value); // Return as a number if it's not a fraction
+}
+
+function oblicz() {
+  const N = parseInt(document.getElementById("degN").value);
+  const a = parseFloat(document.getElementById("dzielnik").value);
+  const x = -a;
+
+  let coeffs = [];
+  for (let i = 0; i <= N; i++) {
+    const inputValue = document.getElementById("a" + i).value;
+    coeffs.push(parseFraction(inputValue));  // Use the helper to handle fractions and integers
+  }
+
+  let wynik = [];
+  let mnozenia = [];
+
+  wynik[0] = coeffs[0];
+  for (let i = 1; i <= N; i++) {
+    mnozenia[i] = wynik[i - 1] * x;
+    wynik[i] = mnozenia[i] + coeffs[i];
+  }
+
+  let html = '<p>Schemat Hornera:</p><table>';
+
+  // Wiersz 1: współczynniki
+  html += '<tr><td class="cyan"></td>';
+  for (let i = 0; i <= N; i++) {
+    html += `<td class="green">${coeffs[i]}</td>`;
+  }
+  html += '</tr>';
+
+  // Wiersz 2: mnożenia
+  html += '<tr><td class="cyan">1</td>';
+  html += '<td class="gray"></td>';
+  for (let i = 1; i <= N; i++) {
+    html += `<td class="gray">${mnozenia[i]}</td>`;
+  }
+  html += '</tr>';
+
+  // Wiersz 3: suma
+  html += '<tr><td class="cyan"></td>';
+  for (let i = 0; i < N; i++) {
+    html += `<td class="gray">${wynik[i]}</td>`;
+  }
+  html += `<td class="blue">${wynik[N]}</td>`;
+  html += '</tr>';
+
+  html += '</table>';
+
+  document.getElementById("schemat").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
