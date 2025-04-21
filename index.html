@@ -33,9 +33,9 @@
       font-size: 14px;
       color: white;
     }
-    .green { background-color: #3b6e46; } 
-    .cyan { background-color: #1a3d36; } 
-    .gray { background-color: #616161; } 
+    .green { background-color: #3b6e46; } /* Camouflage green */
+    .cyan { background-color: #1a3d36; } /* Dark cyan */
+    .gray { background-color: #616161; } /* Dark gray */
     .blue { background-color: #3b5998; color: white; }
     button {
       background-color: #4b4b4b;
@@ -53,6 +53,43 @@
     h2 {
       color: #d3d3d3;
       text-align: center;
+    }
+
+    /* Media queries for mobile responsiveness */
+    @media (max-width: 600px) {
+      input {
+        width: 50px; /* Smaller input fields on mobile */
+        font-size: 12px;
+      }
+      table td {
+        width: 60px; /* Slightly smaller cells for better fit */
+        font-size: 12px;
+      }
+      button {
+        padding: 8px;
+        font-size: 14px;
+      }
+      h2 {
+        font-size: 18px; /* Smaller heading on mobile */
+      }
+    }
+
+    @media (max-width: 400px) {
+      input {
+        width: 45px; /* Further adjust input width */
+        font-size: 11px;
+      }
+      table td {
+        width: 50px; /* Even smaller table cells */
+        font-size: 11px;
+      }
+      button {
+        padding: 6px;
+        font-size: 13px;
+      }
+      h2 {
+        font-size: 16px; /* Even smaller heading for very small screens */
+      }
     }
   </style>
 </head>
@@ -79,7 +116,7 @@ function generujPola() {
   let html = '(';
   for (let i = 0; i <= N; i++) {
     const potega = N - i;
-    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`; 
+    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`; // Fraction input
     if (potega > 1) html += ` x<sup>${potega}</sup> + `;
     else if (potega === 1) html += ` x + `;
   }
@@ -87,17 +124,18 @@ function generujPola() {
   document.getElementById("polaWielomianu").innerHTML = html;
 }
 
-
+// Wywołaj przy pierwszym załadowaniu
 generujPola();
 
+// Helper function to parse input
 function parseFraction(value) {
   if (value.includes("/")) {
     const parts = value.split("/").map(part => parseFloat(part.trim()));
     if (parts.length === 2) {
-      return parts[0] / parts[1]; 
+      return parts[0] / parts[1]; // Return as a decimal if it's a fraction
     }
   }
-  return parseFloat(value); 
+  return parseFloat(value); // Return as a number if it's not a fraction
 }
 
 function oblicz() {
@@ -108,7 +146,7 @@ function oblicz() {
   let coeffs = [];
   for (let i = 0; i <= N; i++) {
     const inputValue = document.getElementById("a" + i).value;
-    coeffs.push(parseFraction(inputValue));  
+    coeffs.push(parseFraction(inputValue));  // Use the helper to handle fractions and integers
   }
 
   let wynik = [];
@@ -122,12 +160,14 @@ function oblicz() {
 
   let html = '<p>Schemat Hornera:</p><table>';
 
+  // Wiersz 1: współczynniki
   html += '<tr><td class="cyan"></td>';
   for (let i = 0; i <= N; i++) {
     html += `<td class="green">${coeffs[i]}</td>`;
   }
   html += '</tr>';
 
+  // Wiersz 2: mnożenia
   html += '<tr><td class="cyan">1</td>';
   html += '<td class="gray"></td>';
   for (let i = 1; i <= N; i++) {
@@ -135,6 +175,7 @@ function oblicz() {
   }
   html += '</tr>';
 
+  // Wiersz 3: suma
   html += '<tr><td class="cyan"></td>';
   for (let i = 0; i < N; i++) {
     html += `<td class="gray">${wynik[i]}</td>`;
