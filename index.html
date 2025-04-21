@@ -33,9 +33,9 @@
       font-size: 14px;
       color: white;
     }
-    .green { background-color: #3b6e46; } /* Camouflage green */
-    .cyan { background-color: #1a3d36; } /* Dark cyan */
-    .gray { background-color: #616161; } /* Dark gray */
+    .green { background-color: #3b6e46; } 
+    .cyan { background-color: #1a3d36; } 
+    .gray { background-color: #616161; } 
     .blue { background-color: #3b5998; color: white; }
     button {
       background-color: #4b4b4b;
@@ -79,7 +79,7 @@ function generujPola() {
   let html = '(';
   for (let i = 0; i <= N; i++) {
     const potega = N - i;
-    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`; // Fraction input
+    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`; 
     if (potega > 1) html += ` x<sup>${potega}</sup> + `;
     else if (potega === 1) html += ` x + `;
   }
@@ -87,18 +87,17 @@ function generujPola() {
   document.getElementById("polaWielomianu").innerHTML = html;
 }
 
-// Wywołaj przy pierwszym załadowaniu
+
 generujPola();
 
-// Helper function to parse input
 function parseFraction(value) {
   if (value.includes("/")) {
     const parts = value.split("/").map(part => parseFloat(part.trim()));
     if (parts.length === 2) {
-      return parts[0] / parts[1]; // Return as a decimal if it's a fraction
+      return parts[0] / parts[1]; 
     }
   }
-  return parseFloat(value); // Return as a number if it's not a fraction
+  return parseFloat(value); 
 }
 
 function oblicz() {
@@ -109,7 +108,7 @@ function oblicz() {
   let coeffs = [];
   for (let i = 0; i <= N; i++) {
     const inputValue = document.getElementById("a" + i).value;
-    coeffs.push(parseFraction(inputValue));  // Use the helper to handle fractions and integers
+    coeffs.push(parseFraction(inputValue));  
   }
 
   let wynik = [];
@@ -123,14 +122,12 @@ function oblicz() {
 
   let html = '<p>Schemat Hornera:</p><table>';
 
-  // Wiersz 1: współczynniki
   html += '<tr><td class="cyan"></td>';
   for (let i = 0; i <= N; i++) {
     html += `<td class="green">${coeffs[i]}</td>`;
   }
   html += '</tr>';
 
-  // Wiersz 2: mnożenia
   html += '<tr><td class="cyan">1</td>';
   html += '<td class="gray"></td>';
   for (let i = 1; i <= N; i++) {
@@ -138,7 +135,6 @@ function oblicz() {
   }
   html += '</tr>';
 
-  // Wiersz 3: suma
   html += '<tr><td class="cyan"></td>';
   for (let i = 0; i < N; i++) {
     html += `<td class="gray">${wynik[i]}</td>`;
