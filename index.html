@@ -5,25 +5,14 @@
   <title>Schemat Hornera</title>
   <style>
     body { 
-      font-family: "Segoe UI", Roboto, Arial, sans-serif; 
+      font-family: 'Segoe UI', sans-serif;
       padding: 20px; 
       background-image: url('https://iili.io/3MKc919.jpg');
       background-size: cover;
-      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-position: center;
       color: white;
     }
-
-    input, button, td {
-      text-shadow: 1px 1px 2px black;
-    }
-
-    p, h2, #schemat {
-      background-color: rgba(0, 0, 0, 0.8);
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-
     input { 
       width: 60px; 
       text-align: center; 
@@ -34,13 +23,11 @@
       color: white;
       font-size: 14px;
     }
-
     table { 
       border-collapse: collapse; 
       margin-top: 20px; 
       width: 100%;
     }
-
     td { 
       width: 80px; 
       height: 40px; 
@@ -49,12 +36,10 @@
       font-size: 14px;
       color: white;
     }
-
     .green { background-color: #3b6e46; }
     .cyan { background-color: #1a3d36; }
     .gray { background-color: #616161; }
     .blue { background-color: #3b5998; color: white; }
-
     button {
       background-color: #4b4b4b;
       color: white;
@@ -65,29 +50,54 @@
       width: 100%;
       margin-top: 10px;
     }
-
     button:hover {
       background-color: #6a6a6a;
     }
-
     h2 {
       color: #d3d3d3;
       text-align: center;
-      text-shadow: 1px 1px 3px #000;
+    }
+    #schemat, #wynikWielomianu {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
     }
 
     @media (max-width: 600px) {
-      input { width: 50px; font-size: 12px; }
-      table td { width: 60px; font-size: 12px; }
-      button { padding: 8px; font-size: 14px; }
-      h2 { font-size: 18px; }
+      input {
+        width: 50px;
+        font-size: 12px;
+      }
+      table td {
+        width: 60px;
+        font-size: 12px;
+      }
+      button {
+        padding: 8px;
+        font-size: 14px;
+      }
+      h2 {
+        font-size: 18px;
+      }
     }
 
     @media (max-width: 400px) {
-      input { width: 45px; font-size: 11px; }
-      table td { width: 50px; font-size: 11px; }
-      button { padding: 6px; font-size: 13px; }
-      h2 { font-size: 16px; }
+      input {
+        width: 45px;
+        font-size: 11px;
+      }
+      table td {
+        width: 50px;
+        font-size: 11px;
+      }
+      button {
+        padding: 6px;
+        font-size: 13px;
+      }
+      h2 {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -107,6 +117,7 @@
 <button onclick="oblicz()">Obliczenia</button>
 
 <div id="schemat"></div>
+<div id="wynikWielomianu"></div>
 
 <script>
 function generujPola() {
@@ -114,7 +125,7 @@ function generujPola() {
   let html = '(';
   for (let i = 0; i <= N; i++) {
     const potega = N - i;
-    html += `<input id="a${i}" placeholder="np. 1/2" value="0">`;
+    html += `<input id="a${i}" placeholder="1/2">`;
     if (potega > 1) html += ` x<sup>${potega}</sup> + `;
     else if (potega === 1) html += ` x + `;
   }
@@ -123,19 +134,31 @@ function generujPola() {
 }
 
 function parseFraction(value) {
+  if (!value.trim()) return 0;
   if (value.includes("/")) {
     const parts = value.split("/").map(part => parseFloat(part.trim()));
-    if (parts.length === 2) {
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] !== 0) {
       return parts[0] / parts[1];
     }
   }
-  return parseFloat(value);
+  const num = parseFloat(value);
+  return isNaN(num) ? 0 : num;
 }
 
-function formatCoeff(num) {
-  if (Number.isInteger(num)) return num.toString();
-  return Number(num.toFixed(4)).toString();
+function toFractionString(num) {
+  const tolerance = 1.0E-6;
+  let h1=1, h2=0, k1=0, k2=1, b = num;
+  do {
+    let a = Math.floor(b);
+    let aux = h1; h1 = a*h1 + h2; h2 = aux;
+    aux = k1; k1 = a*k1 + k2; k2 = aux;
+    b = 1/(b - a);
+  } while (Math.abs(num - h1/k1) > num * tolerance);
+  if (k1 === 1) return `${h1}`;
+  return `${h1}/${k1}`;
 }
+
+generujPola();
 
 function oblicz() {
   const N = parseInt(document.getElementById("degN").value);
@@ -157,53 +180,34 @@ function oblicz() {
     wynik[i] = mnozenia[i] + coeffs[i];
   }
 
-  let html = '<p><strong>Schemat Hornera:</strong></p><table>';
+  let html = '<p>Schemat Hornera:</p><table>';
   html += '<tr><td class="cyan"></td>';
-  for (let i = 0; i <= N; i++) {
-    html += `<td class="green">${coeffs[i]}</td>`;
-  }
-  html += '</tr>';
-
-  html += '<tr><td class="cyan">1</td><td class="gray"></td>';
-  for (let i = 1; i <= N; i++) {
-    html += `<td class="gray">${formatCoeff(mnozenia[i])}</td>`;
-  }
-  html += '</tr>';
-
-  html += '<tr><td class="cyan"></td>';
-  for (let i = 0; i < N; i++) {
-    html += `<td class="gray">${formatCoeff(wynik[i])}</td>`;
-  }
-  html += `<td class="blue">${formatCoeff(wynik[N])}</td>`;
-  html += '</tr></table>';
-
-  const reszta = wynik[N];
-  const wspolczynniki = wynik
-    .slice(0, N)
-    .map((c, i) => {
-      const potega = N - 1 - i;
-      if (Math.abs(c) < 1e-10) return '';
-      let znak = c > 0 ? '+' : '-';
-      let absC = Math.abs(c);
-      let liczba = formatCoeff(absC);
-      if (potega === 0) return `${znak}${liczba}`;
-      if (potega === 1) return `${znak}${liczba}x`;
-      return `${znak}${liczba}x<sup>${potega}</sup>`;
-    })
-    .filter(el => el !== '')
-    .join(" ")
-    .replace(/^\+/, '')
-    .replace(/\+ -/g, '- ');
-
-  html += `<p><strong>Wynik:</strong><br>${wspolczynniki || '0'}</p>`;
-  if (Math.abs(reszta) > 1e-10) {
-    html += `<p><strong>Reszta:</strong> ${formatCoeff(reszta)}</p>`;
-  }
+  for (let i = 0; i <= N; i++) html += `<td class="green">${toFractionString(coeffs[i])}</td>`;
+  html += '</tr><tr><td class="cyan">1</td><td class="gray"></td>';
+  for (let i = 1; i <= N; i++) html += `<td class="gray">${toFractionString(mnozenia[i])}</td>`;
+  html += '</tr><tr><td class="cyan"></td>';
+  for (let i = 0; i < N; i++) html += `<td class="gray">${toFractionString(wynik[i])}</td>`;
+  html += `<td class="blue">${toFractionString(wynik[N])}</td></tr></table>`;
 
   document.getElementById("schemat").innerHTML = html;
-}
 
-generujPola();
+  // Wynikowy wielomian
+  let wielomian = '';
+  for (let i = 0; i < N; i++) {
+    if (Math.abs(wynik[i]) < 1e-10) continue;
+    const potega = N - 1 - i;
+    let wsp = toFractionString(wynik[i]);
+    if (wielomian && wynik[i] > 0) wielomian += '+';
+    if (potega === 0) wielomian += `${wsp}`;
+    else if (potega === 1) wielomian += `${wsp}x`;
+    else wielomian += `${wsp}x<sup>${potega}</sup>`;
+  }
+
+  const reszta = wynik[N];
+  let resztaText = Math.abs(reszta) < 1e-10 ? '' : `<br>Reszta: ${toFractionString(reszta)}`;
+
+  document.getElementById("wynikWielomianu").innerHTML = `<p>Wynik: ${wielomian || '0'}${resztaText}</p>`;
+}
 </script>
 
 </body>
