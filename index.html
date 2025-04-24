@@ -57,8 +57,16 @@
       color: #d3d3d3;
       text-align: center;
     }
+    /* Tło z przezroczystością dla pierwszych trzech sekcji */
+    .input-section {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
     #schemat, #wynikWielomianu {
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.7);
       padding: 15px;
       border-radius: 10px;
       margin-top: 20px;
@@ -105,14 +113,16 @@
 
 <h2>Schemat Hornera</h2>
 
-<p>
-  Stopień wielomianu N = 
-  <input type="number" id="degN" value="4" min="1" onchange="generujPola()">
-</p>
+<div class="input-section">
+  <p>
+    Stopień wielomianu N = 
+    <input type="number" id="degN" value="4" min="1" onchange="generujPola()">
+  </p>
 
-<p id="polaWielomianu"></p>
+  <p id="polaWielomianu"></p>
 
-<p>Dziel przez (x + <input id="dzielnik" value="-1">)</p>
+  <p>Dziel przez (x + <input id="dzielnik" value="-1">)</p>
+</div>
 
 <button onclick="oblicz()">Obliczenia</button>
 
@@ -191,7 +201,6 @@ function oblicz() {
 
   document.getElementById("schemat").innerHTML = html;
 
-  // Wynikowy wielomian
   let wielomian = '';
   for (let i = 0; i < N; i++) {
     if (Math.abs(wynik[i]) < 1e-10) continue;
