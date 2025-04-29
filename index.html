@@ -57,21 +57,18 @@
       color: #d3d3d3;
       text-align: center;
     }
-    /* Tło z przezroczystością dla pierwszych trzech sekcji */
     .input-section {
       background-color: rgba(0, 0, 0, 0.7);
       padding: 10px;
       border-radius: 10px;
       margin-bottom: 20px;
     }
-
     #schemat, #wynikWielomianu {
       background-color: rgba(0, 0, 0, 0.7);
       padding: 15px;
       border-radius: 10px;
       margin-top: 20px;
     }
-
     @media (max-width: 600px) {
       input {
         width: 50px;
@@ -89,7 +86,6 @@
         font-size: 18px;
       }
     }
-
     @media (max-width: 400px) {
       input {
         width: 45px;
@@ -130,6 +126,8 @@
 <div id="wynikWielomianu"></div>
 
 <script>
+let ostatniWynik = [];
+
 function generujPola() {
   const N = parseInt(document.getElementById("degN").value);
   let html = '(';
@@ -141,9 +139,15 @@ function generujPola() {
   }
   html += ')';
   document.getElementById("polaWielomianu").innerHTML = html;
+  if (ostatniWynik.length === N + 1) {
+    for (let i = 0; i <= N; i++) {
+      document.getElementById("a" + i).value = toFractionString(ostatniWynik[i]);
+    }
+  }
 }
 
 function parseFraction(value) {
+  value = value.replace(',', '.');
   if (!value.trim()) return 0;
   if (value.includes("/")) {
     const parts = value.split("/").map(part => parseFloat(part.trim()));
@@ -156,23 +160,34 @@ function parseFraction(value) {
 }
 
 function toFractionString(num) {
+  if (!isFinite(num)) return '∞';
+  const negative = num < 0;
+  num = Math.abs(num);
   const tolerance = 1.0E-6;
   let h1=1, h2=0, k1=0, k2=1, b = num;
+
+  if (Math.abs(num % 1) < tolerance) {
+    return (negative ? '-' : '') + Math.round(num).toString();
+  }
+
   do {
     let a = Math.floor(b);
     let aux = h1; h1 = a*h1 + h2; h2 = aux;
     aux = k1; k1 = a*k1 + k2; k2 = aux;
     b = 1/(b - a);
   } while (Math.abs(num - h1/k1) > num * tolerance);
-  if (k1 === 1) return `${h1}`;
-  return `${h1}/${k1}`;
+
+  let result = k1 === 1 ? `${h1}` : `${h1}/${k1}`;
+  return negative ? '-' + result : result;
 }
 
-generujPola();
+function formatWithComma(str) {
+  return str.replace('.', ',');
+}
 
 function oblicz() {
   const N = parseInt(document.getElementById("degN").value);
-  const a = parseFloat(document.getElementById("dzielnik").value);
+  const a = parseFloat(document.getElementById("dzielnik").value.replace(',', '.'));
   const x = -a;
 
   let coeffs = [];
@@ -190,14 +205,16 @@ function oblicz() {
     wynik[i] = mnozenia[i] + coeffs[i];
   }
 
+  ostatniWynik = wynik.slice(0, N); // zapamiętaj tylko współczynniki wielomianu wynikowego
+
   let html = '<p>Schemat Hornera:</p><table>';
   html += '<tr><td class="cyan"></td>';
-  for (let i = 0; i <= N; i++) html += `<td class="green">${toFractionString(coeffs[i])}</td>`;
+  for (let i = 0; i <= N; i++) html += `<td class="green">${formatWithComma(toFractionString(coeffs[i]))}</td>`;
   html += '</tr><tr><td class="cyan">1</td><td class="gray"></td>';
-  for (let i = 1; i <= N; i++) html += `<td class="gray">${toFractionString(mnozenia[i])}</td>`;
+  for (let i = 1; i <= N; i++) html += `<td class="gray">${formatWithComma(toFractionString(mnozenia[i]))}</td>`;
   html += '</tr><tr><td class="cyan"></td>';
-  for (let i = 0; i < N; i++) html += `<td class="gray">${toFractionString(wynik[i])}</td>`;
-  html += `<td class="blue">${toFractionString(wynik[N])}</td></tr></table>`;
+  for (let i = 0; i < N; i++) html += `<td class="gray">${formatWithComma(toFractionString(wynik[i]))}</td>`;
+  html += `<td class="blue">${formatWithComma(toFractionString(wynik[N]))}</td></tr></table>`;
 
   document.getElementById("schemat").innerHTML = html;
 
@@ -205,7 +222,7 @@ function oblicz() {
   for (let i = 0; i < N; i++) {
     if (Math.abs(wynik[i]) < 1e-10) continue;
     const potega = N - 1 - i;
-    let wsp = toFractionString(wynik[i]);
+    let wsp = formatWithComma(toFractionString(wynik[i]));
     if (wielomian && wynik[i] > 0) wielomian += '+';
     if (potega === 0) wielomian += `${wsp}`;
     else if (potega === 1) wielomian += `${wsp}x`;
@@ -213,10 +230,20 @@ function oblicz() {
   }
 
   const reszta = wynik[N];
-  let resztaText = Math.abs(reszta) < 1e-10 ? '' : `<br>Reszta: ${toFractionString(reszta)}`;
+  let resztaText = Math.abs(reszta) < 1e-10 ? '' : `<br>Reszta: ${formatWithComma(toFractionString(reszta))}`;
 
-  document.getElementById("wynikWielomianu").innerHTML = `<p>Wynik: ${wielomian || '0'}${resztaText}</p>`;
+  document.getElementById("wynikWielomianu").innerHTML = `
+    <p>Wynik: ${wielomian || '0'}${resztaText}</p>
+    <button onclick="kontynuujDzielenie()">Kontynuuj dzielenie</button>
+  `;
 }
+
+function kontynuujDzielenie() {
+  const nowyStopien = ostatniWynik.length - 1;
+  document.getElementById("degN").value = nowyStopien;
+  generujPola();
+}
+generujPola();
 </script>
 
 </body>
